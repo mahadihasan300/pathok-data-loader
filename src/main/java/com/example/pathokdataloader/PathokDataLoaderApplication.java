@@ -72,12 +72,44 @@ public class PathokDataLoaderApplication {
 
     private void initWorks(){
 
+        Path path = Paths.get(worksDumpLocation);
+
+        try(Stream<String> lines = Files.lines(path)){
+
+            lines.forEach(line ->{
+
+                // Read and parse the line
+                String jsonString = line.substring(line.indexOf("{"));
+
+                try {
+
+                    JSONObject jsonObject = new JSONObject(jsonString);
+
+                    // Construct Book object
+                    Author author = new Author();
+                    author.setName(jsonObject.optString("name"));
+                    author.setPersonalName(jsonObject.optString("personal_name"));
+                    author.setAuthorId(jsonObject.optString("key").replace("/authors/", ""));
+
+                    // Persist using repository
+                    authorRepository.save(author);
+
+                    System.out.println("Author saved named ::::::::: " + author.getName());
+
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+            });
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     @PostConstruct
     public void start(){
         System.out.println("Application Started");
-        initAuthors();
+        //initAuthors();
 
 
     }
